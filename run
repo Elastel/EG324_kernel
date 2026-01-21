@@ -31,6 +31,8 @@ if [ "$(uname -r)" = "4.4.83" ] && [ ! -e "/dev/fb0" ]; then
 	
 	umount $cur_dir/mount
 	echo "Update succeeded, begin to reboot!"
+	touch /etc/kernel_update
+	chattr +i /etc/kernel_update
 	reboot
 else
 	echo "ERROR:NOT GT665X!!!!"
