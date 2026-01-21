@@ -1,0 +1,38 @@
+#!/bin/sh
+
+buzzer_alert() {
+    echo 1 > /dev/buzzer
+    exit 1
+}
+
+if [ "$(uname -r)" = "4.4.83" ] && [ ! -e "/dev/fb0" ]; then
+	cur_dir=$(cd "$(dirname "$0")";pwd)
+	mkdir -p $cur_dir/mount
+	
+	md5sum -c md5.txt > /dev/null
+	if [ $? -ne 0 ]; then
+		echo "Kernel file checksum error!!!!!!!!"
+		buzzer_alert
+	fi
+	
+	mount -t ext4 /dev/mmcblk0p1 $cur_dir/mount
+	if [ $? -ne 0 ]; then
+		echo "ERROR: /dev/mmcblk0p1 mount failed!!!!"
+		buzzer_alert
+	fi
+    
+	cp -r $cur_dir/zImage $cur_dir/mount/
+	if [ $? -ne 0 ]; then
+		echo "ERROR: Kernel file copy failed!!!!"
+		umount $cur_dir/mount
+		buzzer_alert
+	fi
+	sync
+	
+	umount $cur_dir/mount
+	echo "Update succeeded, begin to reboot!"
+	reboot
+else
+	echo "ERROR:NOT GT665X!!!!"
+	buzzer_alert
+fi
